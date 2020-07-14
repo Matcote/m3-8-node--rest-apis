@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const morgan = require("morgan");
 const { v4: uuidv4 } = require("uuid");
 const clients = require("./data/clients").clients;
+const words = require("./data/words").words;
 
 express()
   .use(function (req, res, next) {
@@ -21,6 +22,7 @@ express()
   .use(express.urlencoded({ extended: false }))
 
   // endpoints
+  //clients
   .get("/users", (req, res) => {
     res.status(200).send(clients);
   })
@@ -54,6 +56,34 @@ express()
       res.status(201).send(clients);
     } else {
       res.status(400).send("bro enter your shit correctly next time");
+    }
+  })
+  //hangman
+  .get("/hangman/word/:id", (req, res) => {
+    res.status(200).send(words.find((element) => element.id === req.params.id));
+  })
+  .get("/hangman/word", (req, res) => {
+    let word = words[Math.floor(Math.random() * clients.length)];
+    res.status(200).send({
+      id: word.id,
+      letterCount: word.letterCount,
+    });
+  })
+  .get("/hangman/guess/:id/:letter", (req, res) => {
+    let word = words.find((element) => element.id === req.params.id);
+    let letters = word.word.split("");
+    let result = [];
+    for (let i = 0; i < word.letterCount; i++) {
+      if (letters[i] == req.params.letter) {
+        result.push(true);
+      } else {
+        result.push(false);
+      }
+    }
+    if (word.word.includes(req.params.letter)) {
+      res.status(200).send(result);
+    } else {
+      res.status(400).send(result);
     }
   })
 
